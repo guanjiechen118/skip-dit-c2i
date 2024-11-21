@@ -1,0 +1,2 @@
+srun --partition=MoE --mpi=pmi2 --gres=gpu:1 -n1 --ntasks-per-node=1 --job-name=cgj --kill-on-bad-exit=1 --quotatype=auto \
+python sample.py --ckpt /mnt/petrelfs/chenguanjie/cgj/DiT-skip/ckpt/DiT-skip-1_5M.pt --model DiT-cache-3

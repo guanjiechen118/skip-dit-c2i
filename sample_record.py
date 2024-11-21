@@ -42,31 +42,42 @@ def main(args):
     model.eval()  # important!
     diffusion = create_diffusion(str(args.num_sampling_steps))
     vae = AutoencoderKL.from_pretrained(f"stabilityai/sd-vae-ft-{args.vae}").to(device)
+    assert args.cfg_scale >= 1.0, "In almost all cases, cfg_scale be >= 1.0"
+    using_cfg = args.cfg_scale > 1.0
 
-    # Labels to condition the model with (feel free to change):
-    class_labels = [207, 360, 387, 974, 88, 979, 417, 279]
-
+    # Labels to condition the model with (feel free to change): 
+    # class_labels = [207, 360, 387, 974, 88, 979, 417, 279]
+    class_labels = [279]
     # Create sampling noise:
     n = len(class_labels)
     z = torch.randn(n, 4, latent_size, latent_size, device=device)
     y = torch.tensor(class_labels, device=device)
 
     # Setup classifier-free guidance:
-    z = torch.cat([z, z], 0)
-    y_null = torch.tensor([1000] * n, device=device)
-    y = torch.cat([y, y_null], 0)
-    model_kwargs = dict(y=y, cfg_scale=args.cfg_scale)
+    if using_cfg:
+        z = torch.cat([z, z], 0)
+        y_null = torch.tensor([1000] * n, device=device)
+        y = torch.cat([y, y_null], 0)
+        model_kwargs = dict(y=y, cfg_scale=args.cfg_scale)
+        sample_fn = model.forward_with_cfg
+    else:
+        model_kwargs = dict(y=y)
+        sample_fn = model.forward
+
 
     # Sample images:
-    samples = diffusion.p_sample_loop(
-        model.forward_with_cfg, z.shape, z, clip_denoised=False, model_kwargs=model_kwargs, progress=True, device=device
-    )
-    samples, _ = samples.chunk(2, dim=0)  # Remove null class samples
-    samples = vae.decode(samples / 0.18215).sample
-
-    # Save and display images:
-    save_image(samples, "sample-1000-20.png", nrow=4, normalize=True, value_range=(-1, 1))
-
+    total_time = []
+    import time
+    
+    for i in range(10):
+        start_time = time.time()
+        samples = diffusion.p_sample_loop(
+            sample_fn, z.shape, z, clip_denoised=False, model_kwargs=model_kwargs, progress=True, device=device
+        )
+        if i > 2:
+            total_time.append(time.time()-start_time)
+            print(total_time)
+    print(f'ave time :{sum(total_time)/len(total_time)}')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -74,7 +85,7 @@ if __name__ == "__main__":
     parser.add_argument("--vae", type=str, choices=["ema", "mse"], default="mse")
     parser.add_argument("--image-size", type=int, choices=[256, 512], default=256)
     parser.add_argument("--num-classes", type=int, default=1000)
-    parser.add_argument("--cfg-scale", type=float, default=4.0)
+    parser.add_argument("--cfg-scale", type=float, default=1.5)
     parser.add_argument("--num-sampling-steps", type=int, default=250)
     parser.add_argument("--seed", type=int, default=10)
     parser.add_argument("--ckpt", type=str, default=None,

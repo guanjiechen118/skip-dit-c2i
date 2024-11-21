@@ -256,7 +256,7 @@ class GaussianDiffusion:
         Apply the model to get p(x_{t-1} | x_t), as well as a prediction of
         the initial x, x_0.
         :param model: the model, which takes a signal and a batch of timesteps
-                      as input.
+                    as input.
         :param x: the [N x C x ...] tensor at time t.
         :param t: a 1-D Tensor of timesteps.
         :param clip_denoised: if True, clip the denoised signal into [-1, 1].
@@ -266,10 +266,10 @@ class GaussianDiffusion:
         :param model_kwargs: if not None, a dict of extra keyword arguments to
             pass to the model. This can be used for conditioning.
         :return: a dict with the following keys:
-                 - 'mean': the model mean output.
-                 - 'variance': the model variance output.
-                 - 'log_variance': the log of 'variance'.
-                 - 'pred_xstart': the prediction for x_0.
+                - 'mean': the model mean output.
+                - 'variance': the model variance output.
+                - 'log_variance': the log of 'variance'.
+                - 'pred_xstart': the prediction for x_0.
         """
         if model_kwargs is None:
             model_kwargs = {}
@@ -433,7 +433,7 @@ class GaussianDiffusion:
         :param model: the model module.
         :param shape: the shape of the samples, (N, C, H, W).
         :param noise: if specified, the noise from the encoder to sample.
-                      Should be of the same shape as `shape`.
+                    Should be of the same shape as `shape`.
         :param clip_denoised: if True, clip x_start predictions to [-1, 1].
         :param denoised_fn: if not None, a function which applies to the
             x_start prediction before it is used to sample.
@@ -442,7 +442,7 @@ class GaussianDiffusion:
         :param model_kwargs: if not None, a dict of extra keyword arguments to
             pass to the model. This can be used for conditioning.
         :param device: if specified, the device to create the samples on.
-                       If not specified, use a model parameter's device.
+                    If not specified, use a model parameter's device.
         :param progress: if True, show a tqdm progress bar.
         :return: a non-differentiable batch of samples.
         """
